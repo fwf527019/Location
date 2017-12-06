@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:background="#f4f4f4"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
     <RelativeLayout
+        android:background="@color/main_green"
         android:layout_width="match_parent"
         android:layout_height="50dp">
 
         <ImageView
             android:id="@+id/back"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:padding="13dp"
-            android:src="@drawable/back_icon" />
+            android:src="@drawable/back_ico"
+            android:layout_toLeftOf="@+id/title"
+            android:layout_toStartOf="@+id/title" />
 
         <TextView
             android:id="@+id/title"
@@ -25,7 +28,7 @@
             android:gravity="center"
             android:maxLines="1"
             android:text="帮助说明"
-            android:textColor="@color/black"
+            android:textColor="#fff"
             android:textSize="17sp" />
 
         <TextView

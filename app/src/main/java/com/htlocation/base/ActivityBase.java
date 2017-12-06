@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import com.htlocation.R;
+import com.htlocation.StatusBarUtil;
 
 
 /**
@@ -38,8 +40,8 @@ public abstract class ActivityBase extends FragmentActivity {
         }
 
         setContentView(getContentViewResId());
+        StatusBarUtil.setColor(this,getResources().getColor(R.color.main_green));
         //状态栏高度
-        getRootView(this).setPadding(0,getStatusHeight(),0,0);
         initViews(); //初始化控件
         initDatas();//初始化数据
 

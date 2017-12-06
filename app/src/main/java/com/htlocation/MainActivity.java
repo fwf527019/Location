@@ -4,18 +4,16 @@ import android.Manifest;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,6 +26,7 @@ import com.facebook.drawee.interfaces.DraweeController;
 import com.htlocation.Service.LocationService;
 import com.htlocation.Service.OnePixelReceiver;
 import com.htlocation.base.ActivityBase;
+import com.taobao.sophix.SophixManager;
 import com.yanzhenjie.permission.AndPermission;
 import com.yanzhenjie.permission.PermissionListener;
 
@@ -53,9 +52,12 @@ public class MainActivity extends ActivityBase {
     TextView gpsCode;
     @BindView(R.id.address)
     TextView address;
+    @BindView(R.id.btn_tv)
+    TextView btnTv;
     private MsgReceiver msgReceiver;
 
     private OnePixelReceiver mOnepxReceiver;
+
 
     @Override
     protected int getContentViewResId() {
@@ -70,14 +72,17 @@ public class MainActivity extends ActivityBase {
     @Override
     protected void initDatas() {
 
+
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // TODO: add setContentView(...) invocation
         ButterKnife.bind(this);
         //注册监听屏幕的广播
+
         mOnepxReceiver = new OnePixelReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("android.intent.action.SCREEN_OFF");
@@ -94,13 +99,14 @@ public class MainActivity extends ActivityBase {
 
 
         if (isServiceRunning(MainActivity.this)) {
-            btn.setText("关闭服务");
+            btnTv.setText("点击关闭服务↑");
             btn.setBackgroundResource(R.drawable.ring1);
         }
         initImg();
         //获取手机IMEI码
         AndPermission.with(MainActivity.this)
-                .permission(Manifest.permission.READ_PHONE_STATE
+                .permission(Manifest.permission.READ_PHONE_STATE,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE
+                        ,Manifest.permission.ACCESS_WIFI_STATE
                 )
                 .requestCode(100)
                 .callback(new PermissionListener() {
@@ -111,7 +117,7 @@ public class MainActivity extends ActivityBase {
                         Log.d("MainActivity", imei);
                         gpsCode.setText(imei);
                         App.IMEI = imei;
-
+                        SophixManager.getInstance().queryAndLoadNewPatch();
                     }
 
                     @Override
@@ -124,14 +130,19 @@ public class MainActivity extends ActivityBase {
 
     }
 
-    @OnClick({R.id.back, R.id.btn,R.id.right_tv})
+    @OnClick({R.id.back, R.id.btn, R.id.right_tv})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.back:
-                finish();
+                Intent home = new Intent(Intent.ACTION_MAIN);
+                home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                home.addCategory(Intent.CATEGORY_HOME);
+                startActivity(home);
+//             startActivity(new Intent(MainActivity.this, ExplainActivity.class));
+//                Toast.makeText(this, "呵呵呵大", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.right_tv:
-                startActivity(new Intent(MainActivity.this,ExplainActivity.class));
+                startActivity(new Intent(MainActivity.this, ExplainActivity.class));
                 break;
             case R.id.btn:
                 AndPermission.with(MainActivity.this)
@@ -142,10 +153,10 @@ public class MainActivity extends ActivityBase {
                         .callback(new PermissionListener() {
                             @Override
                             public void onSucceed(int requestCode, @NonNull List<String> grantPermissions) {
-                                if (btn.getText().toString().equals("开启服务")) {
+                                if (btnTv.getText().toString().contains("点击开启服务")) {
                                     Intent intent = new Intent(MainActivity.this, LocationService.class);
-                                    btn.setText("关闭服务");
-                                    btn.setBackgroundResource(R.drawable.ring1);
+                                    btnTv.setText("点击关闭服务↑");
+                                    btn.setBackgroundResource(R.drawable.meitu_3);
                                     startService(intent);
                                 } else {
 
@@ -156,8 +167,8 @@ public class MainActivity extends ActivityBase {
                                     alertDialog.setPositiveButton("确认", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            btn.setText("开启服务");
-                                            btn.setBackgroundResource(R.drawable.ring2);
+                                            btnTv.setText("点击开启服务↑");
+                                            btn.setBackgroundResource(R.drawable.meitu_4);
                                             Intent intent = new Intent(MainActivity.this, LocationService.class);
                                             stopService(intent);
                                             dialog.dismiss();
@@ -190,8 +201,8 @@ public class MainActivity extends ActivityBase {
     protected void onStart() {
         super.onStart();
         if (isServiceRunning(MainActivity.this)) {
-            btn.setText("关闭服务");
-            btn.setBackgroundResource(R.drawable.ring1);
+            btnTv.setText("点击关闭服务↑");
+            btn.setBackgroundResource(R.drawable.meitu_3);
 
         }
     }
@@ -236,10 +247,27 @@ public class MainActivity extends ActivityBase {
         @Override
         public void onReceive(Context context, Intent intent) {
             //拿到数据，更新UI
-            String taddress=intent.getStringExtra("address");
+            String taddress = intent.getStringExtra("address");
             address.setText(taddress);
 
         }
-
     }
+
+
+    //点击返回键返回桌面而不是退出程序
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Intent home = new Intent(Intent.ACTION_MAIN);
+            home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            home.addCategory(Intent.CATEGORY_HOME);
+            startActivity(home);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+
 }

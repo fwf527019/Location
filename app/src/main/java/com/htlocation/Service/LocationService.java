@@ -14,7 +14,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +24,7 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSONObject;
 import com.htlocation.App;
 import com.htlocation.MainActivity;
 import com.htlocation.R;
@@ -52,7 +52,7 @@ public class LocationService extends Service {
     private Location mLocation;
     private boolean isRun;
     private Handler handler = new Handler();
-    private long TIME = 10000;
+    private long TIME = 30000;
     private String addressStr;
     Runnable runnable = new Runnable() {
         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -223,9 +223,9 @@ public class LocationService extends Service {
                 }
                 /*sb.append(address.getCountryName());
                 Log.i("location", "address.getCountryName()==" + address.getCountryName());//国家名*/
-              //  sb.append(address.getLocality()).append(" ");
+                //  sb.append(address.getLocality()).append(" ");
                 Log.i("location", "address.getLocality()==" + address.getLocality());//城市名
-              //  sb.append(address.getSubLocality());
+                //  sb.append(address.getSubLocality());
                 Log.i("location", "address.getSubLocality()=2=" + address.getSubLocality());//---区名
                 addressStr = sb.toString();
             }
@@ -254,6 +254,9 @@ public class LocationService extends Service {
             showloction(location);
         }
 
+        Log.d("LocationService", UrlUtils.getTime());
+        Log.d("LocationService", UrlUtils.getMd5(UrlUtils.getTime()));
+
         com.alibaba.fastjson.JSONObject jsobj = new com.alibaba.fastjson.JSONObject();
         jsobj.put("lng", mLocation.getLongitude());
         jsobj.put("lat", mLocation.getLatitude());
@@ -263,18 +266,26 @@ public class LocationService extends Service {
                 .content(jsobj.toJSONString())
                 .addHeader("timestamp", UrlUtils.getTime())
                 .addHeader("token", UrlUtils.getMd5(UrlUtils.getTime()))
-                .url("http://192.168.1.55:8002/LogisticsPlatform/UpLoadTruckPosition")
+                .url("http://112.74.68.246:8002/LogisticsPlatform/UpLoadTruckPosition")
+                //  .url("http://192.168.1.55:8002/LogisticsPlatform/UpLoadTruckPosition")
                 .mediaType(MediaType.parse("application/json; charset=utf-8"))
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
                         Toast.makeText(LocationService.this, "e:" + e, Toast.LENGTH_SHORT).show();
+                        Log.d("LocationService", "e:" + e);
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        Toast.makeText(LocationService.this, "response:" + response, Toast.LENGTH_SHORT).show();
+
+                        Log.d("LocationService", response);
+                        if (JSONObject.parseObject(response).get("IsSuccess").toString().equals("true")) {
+                           // Toast.makeText(LocationService.this, "数据上传成功", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(LocationService.this, JSONObject.parseObject(response).get("Message").toString(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 

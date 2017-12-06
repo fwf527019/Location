@@ -2,6 +2,10 @@ package com.htlocation;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 /**
  * Created by Administrator on 2017/4/17.
@@ -13,7 +17,14 @@ public class UrlUtils {
     public static String getTime() {
         long l = System.currentTimeMillis();
         String m = l + "";
-        return m;
+
+        //获取当前时间
+        Date date=new Date();
+        DateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String time=format.format(date);
+
+
+        return time;
     }
 
     //MD5加密
